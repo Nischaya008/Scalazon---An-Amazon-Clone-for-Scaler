@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { 
@@ -13,7 +13,7 @@ import { placeOrder } from '@/app/actions/checkout';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
-export default function CartPage() {
+function CartPageContent() {
   const { cartItems, cartCount, subtotal, removeFromCart, updateQuantity, fetchCart } = useCart();
   const { session } = useAuth();
   const router = useRouter();
@@ -338,5 +338,13 @@ export default function CartPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function CartPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#eaeded] p-6 text-center text-lg">Loading Cart...</div>}>
+      <CartPageContent />
+    </Suspense>
   );
 }
