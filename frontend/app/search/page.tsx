@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CartSidebar from '@/components/CartSidebar';
@@ -13,7 +13,7 @@ import { useWishlist } from '@/components/ui/WishlistProvider';
 import { toast } from 'sonner';
 import { createClient } from '@/utils/supabase/client';
 
-export default function SearchResults() {
+function SearchResultsContent() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const searchParams = useSearchParams();
@@ -554,5 +554,13 @@ export default function SearchResults() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function SearchResults() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white text-[#0f1111] font-sans p-6 text-center">Loading Search Results...</div>}>
+      <SearchResultsContent />
+    </Suspense>
   );
 }
