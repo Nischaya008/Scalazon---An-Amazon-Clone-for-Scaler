@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useWishlist } from '@/components/ui/WishlistProvider';
@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Star, Search, Trash2, Share, Move, ChevronDown, Check } from 'lucide-react';
 
-export default function WishlistPage() {
+function WishlistContent() {
    const { wishlistItems, activeWishlist, toggleWishlistItem, loading, fetchWishlist } = useWishlist();
    const { session, isLoading: authLoading } = useAuth();
    const { addToCart } = useCart();
@@ -235,5 +235,13 @@ export default function WishlistPage() {
 
          <Footer />
       </div>
+   );
+}
+
+export default function WishlistPage() {
+   return (
+      <Suspense fallback={<div className="min-h-screen bg-white p-10 text-center text-[#565959]">Loading Wishlist...</div>}>
+         <WishlistContent />
+      </Suspense>
    );
 }
