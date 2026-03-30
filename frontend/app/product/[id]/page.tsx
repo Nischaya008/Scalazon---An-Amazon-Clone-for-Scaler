@@ -11,8 +11,10 @@ import {
 import Link from 'next/link';
 import { useAuth } from '@/components/ui/AuthProvider';
 import { toast } from 'sonner';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import CartSidebar from '@/components/CartSidebar';
+import { useCart } from '@/components/ui/CartProvider';
 
 export default function ProductPage() {
   const { id } = useParams() as { id: string };
@@ -26,6 +28,10 @@ export default function ProductPage() {
   const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const { session } = useAuth();
+  const { addToCart } = useCart();
+  const router = useRouter();
+  const [addedItem, setAddedItem] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     async function load() {
@@ -48,6 +54,20 @@ export default function ProductPage() {
       toast.success(successMsg);
     }
   };
+
+  const handleAddToCart = async (e: React.MouseEvent, productId: string) => {
+    e.preventDefault();
+    if (!session) {
+      toast.error('Sign in first', {
+        description: 'You need to be signed in to add items to your cart.',
+        action: { label: 'Sign in', onClick: () => router.push('/enter') }
+      });
+      return;
+    }
+    await addToCart(productId, quantity);
+    setAddedItem(productId);
+    setTimeout(() => setAddedItem(null), 2000);
+  }
 
   const LOGITECH_GALLERY = [
     { type: 'image', src: "https://resource.logitech.com/w_544,h_466,ar_7:6,c_pad,q_auto,f_auto,dpr_2.0/d_transparent.gif/content/dam/logitech/en/products/mice/mx-master-4/gallery/mx-master-4-graphite-top-angle-gallery-1.png" },
@@ -127,10 +147,11 @@ export default function ProductPage() {
         <span className="text-[#565959]">Gaming Mice</span>
       </div>
 
-      <main className="w-full flex justify-center mt-0">
-        <div className="flex-1 px-4 pb-8 max-w-[1500px] w-full">
+      <div className="flex max-w-[1920px] mx-auto p-0 sm:p-4 gap-0 sm:gap-6 relative mt-0">
+        <main className="flex-grow w-full min-w-0">
+          <div className="flex-1 px-4 sm:px-0 pb-8 max-w-[1500px] w-full mx-auto">
 
-          {/* ====== 3-Column Layout: Thumbnails | Main Image + Product Info | Buy Box ====== */}
+            {/* ====== 3-Column Layout: Thumbnails | Main Image + Product Info | Buy Box ====== */}
           <div className="flex flex-col lg:flex-row gap-0 w-full items-start mt-2">
 
             {/* ===== LEFT SECTION: Thumbnails + Main Image ===== */}
@@ -478,19 +499,27 @@ export default function ProductPage() {
                 </div>
 
                 {/* Quantity */}
-                <select className="bg-[#F0F2F2] border border-[#D5D9D9] hover:bg-[#e3e6e6] text-[#0f1111] text-[13px] rounded-lg px-3 py-[9px] shadow-sm mb-3 outline-none w-full cursor-pointer h-[36px] font-bold">
-                  <option>Quantity: 1</option>
-                  <option>Quantity: 2</option>
-                  <option>Quantity: 3</option>
+                <select 
+                  value={quantity}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  className="bg-[#F0F2F2] border border-[#D5D9D9] hover:bg-[#e3e6e6] text-[#0f1111] text-[13px] rounded-lg px-3 py-[9px] shadow-sm mb-3 outline-none w-full cursor-pointer h-[36px] font-bold"
+                >
+                  <option value={1}>Quantity: 1</option>
+                  <option value={2}>Quantity: 2</option>
+                  <option value={3}>Quantity: 3</option>
                 </select>
 
                 {/* Buy buttons */}
                 <div className="flex flex-col gap-2 mb-3">
                   <button
-                    onClick={(e) => enforceAuth(e, 'Added to cart')}
-                    className="w-full h-[34px] bg-[#FFD814] hover:bg-[#F7CA00] rounded-full text-[13px] text-[#0f1111] shadow-sm font-medium cursor-pointer"
+                    onClick={(e) => handleAddToCart(e, product.id)}
+                    className={`w-full h-[34px] rounded-full text-[13px] text-[#0f1111] shadow-sm font-medium cursor-pointer flex items-center justify-center gap-1.5 ${addedItem === product.id ? 'bg-[#f0f2f2] border border-[#D5D9D9] hover:bg-[#e3e6e6]' : 'bg-[#FFD814] hover:bg-[#F7CA00]'}`}
                   >
-                    Add to cart
+                    {addedItem === product.id ? (
+                      <><Check size={16} className="text-[#007600]"/> Added</>
+                    ) : (
+                      'Add to cart'
+                    )}
                   </button>
                   <button
                     onClick={(e) => enforceAuth(e, 'Redirecting to checkout...')}
@@ -740,8 +769,13 @@ export default function ProductPage() {
           </div>
 
           </div>
+        </main>
+        
+        {/* Cart Sidebar structurally inline */}
+        <div className="hidden lg:block relative z-10 w-[140px] xl:w-[160px] flex-shrink-0 sticky top-[80px] h-[calc(100vh-100px)] self-start">
+           <CartSidebar />
         </div>
-      </main>
+      </div>
 
       <Footer />
     </div>
