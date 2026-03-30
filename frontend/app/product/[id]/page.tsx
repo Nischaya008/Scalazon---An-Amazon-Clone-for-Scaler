@@ -766,10 +766,10 @@ export default function ProductPage() {
                   </div>
                 </div>
               ))}
+            </div>
           </div>
-
-          </div>
-        </main>
+        </div>
+      </main>
         
         {/* Cart Sidebar structurally inline */}
         <div className="hidden lg:block relative z-10 w-[140px] xl:w-[160px] flex-shrink-0 sticky top-[80px] h-[calc(100vh-100px)] self-start">
